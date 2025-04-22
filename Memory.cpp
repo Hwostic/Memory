@@ -87,7 +87,8 @@ void LuckCounts(char** board, char* cards, int size, int size2, int& count)
         cout << "Y: ";
         cin >> y2;
 
-        
+        x1 = x1 - 1, y1 = y1 - 1, x2 = x2 - 1, y2 = y2 - 1;
+
         if (x1 < 0 || x1 >= size || y1 < 0 || y1 >= size ||
             x2 < 0 || x2 >= size || y2 < 0 || y2 >= size) 
         {
