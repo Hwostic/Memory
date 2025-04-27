@@ -1,14 +1,43 @@
 ﻿#include <iostream> 
 #include <ctime>    
+#include <thread>
 #include <windows.h>  //для использования функцийоперационной системы Windows
 #include <mmsystem.h> // для работы с мультимедиа
 #include <chrono> // для работы со временем
+#include <cstdlib> //для очистки консоли
 
 #pragma comment (lib, "Winmm.lib") //для работы с PlaySound
 
 using namespace std;
 
 
+// Функция для перемещения курсора вверх и очистки строк ниже
+void moveCursorUpAndClear(HANDLE hConsole, int linesToMove) {
+    // Получаем текущую позицию курсора
+    CONSOLE_SCREEN_BUFFER_INFO csbi;
+    GetConsoleScreenBufferInfo(hConsole, &csbi);
+    COORD cursorPos = csbi.dwCursorPosition;
+
+    // Перемещаем курсор на указанное количество строк вверх
+    cursorPos.Y -= linesToMove;
+
+    // Устанавливаем новую позицию курсора
+    SetConsoleCursorPosition(hConsole, cursorPos);
+
+    // Очищаем строки ниже текущей позиции курсора
+    for (int i = 0; i < linesToMove; ++i) {
+        // Заполняем строку пробелами
+        DWORD written;
+        FillConsoleOutputCharacter(hConsole, ' ', csbi.dwSize.X, cursorPos, &written);
+        // Заполняем атрибуты (цвета) для очищаемых строк
+        FillConsoleOutputAttribute(hConsole, csbi.wAttributes, csbi.dwSize.X, cursorPos, &written);
+        // Переходим на следующую строку
+        cursorPos.Y++;
+    }
+
+    // Устанавливаем курсор обратно на начальную позицию
+    SetConsoleCursorPosition(hConsole, cursorPos);
+}
 // Создание доски и карточек
 
 void createBoard(char** board, char* cards, int size, int size2) 
@@ -67,6 +96,8 @@ bool isVin(char** board, int x1, int y1, int x2, int y2)
 
 void LuckCounts(char** board, char* cards, int size, int size2, int& count)
 {
+    HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+   
     int luckyCount = 0; // Счетчик найденных пар
 
     while (luckyCount < size * size2 / 2)
@@ -80,7 +111,7 @@ void LuckCounts(char** board, char* cards, int size, int size2, int& count)
         cout << "\nВведите координаты первой карточки:\nX: ";
         cin >> x1;
         cout << "Y: ";
-        cin >> y1;
+      cin >> y1;
     
         cout << "Введите координаты второй карточки:\nX: ";
         cin >> x2;
@@ -98,6 +129,7 @@ void LuckCounts(char** board, char* cards, int size, int size2, int& count)
         if (x1 == x2 && y1 == y2 && x1 == y1 && x2 == y2)
         {
             cout << "Это одна и та жа карточка, введите заново" << endl;
+            
             continue;
         }
 
@@ -123,10 +155,13 @@ void LuckCounts(char** board, char* cards, int size, int size2, int& count)
         else 
         {
             PlaySoundA("fail.wav", NULL, SND_FILENAME | SND_ASYNC);
-
+            this_thread::sleep_for(chrono::seconds(4));
+            moveCursorUpAndClear(hConsole, 10);
             cout << "Нет совпадения. Закрываем карточки.\n" << endl; 
+
             board[x1][y1] = '*'; 
             board[x2][y2] = '*'; 
+            
         }
     }
 
@@ -142,6 +177,8 @@ int main()
 
     int count = 0; // количество открываемых карточек
 
+
+
     cout << "Приветствуем в игре Memory!\nПравилы игры просты: открывать по 2 карточки, пока не найдутся совпадения. Приступим! :)\n";
 
     while (true)
@@ -155,11 +192,11 @@ int main()
         cin >> size2; 
 
         // Проверка на четность размера
-        if (((size * size2) % 2 != 0 || size < 2 || size >= 20) && (size2 % 2 != 0 || size2 < 2 || size2 >= 20)) {
+        if (((size * size2) % 2 != 0 || size < 2 || size >= 20) || (size2 % 2 != 0 || size2 < 2 || size2 >= 20)) {
             cout << "Размер должен быть четным, не меньше 2 и не больше 20." << endl;
             continue; 
         }
-
+      
        
         char** board = new char* [size];
         for (int i = 0; i < size; i++) {
@@ -169,6 +206,7 @@ int main()
 
         createBoard(board, cards, size, size2); //Создаем доску с карточками
 
+    
         LuckCounts(board, cards, size, size2, count); //основное тело программы, по завершению заиграет победная музыка
 
 
