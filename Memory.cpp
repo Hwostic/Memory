@@ -35,8 +35,7 @@ void moveCursorUpAndClear(HANDLE hConsole, int linesToMove) {
         cursorPos.Y++;
     }
 
-    // Устанавливаем курсор обратно на начальную позицию
-    SetConsoleCursorPosition(hConsole, cursorPos);
+   
 }
 // Создание доски и карточек
 
@@ -120,8 +119,8 @@ void LuckCounts(char** board, char* cards, int size, int size2, int& count)
 
         x1 = x1 - 1, y1 = y1 - 1, x2 = x2 - 1, y2 = y2 - 1;
 
-        if (x1 < 0 || x1 >= size || y1 < 0 || y1 >= size ||
-            x2 < 0 || x2 >= size || y2 < 0 || y2 >= size) 
+        if (x1 < 0 || x1 >= size || y1 < 0 || y1 >= size2 ||
+            x2 < 0 || x2 >= size || y2 < 0 || y2 >= size2) 
         {
             cout << "Некорректные координаты. Попробуйте снова." << endl;
             continue; 
@@ -156,7 +155,7 @@ void LuckCounts(char** board, char* cards, int size, int size2, int& count)
         {
             PlaySoundA("fail.wav", NULL, SND_FILENAME | SND_ASYNC);
             this_thread::sleep_for(chrono::seconds(4));
-            moveCursorUpAndClear(hConsole, 10);
+            moveCursorUpAndClear(hConsole, size+8);
             cout << "Нет совпадения. Закрываем карточки.\n" << endl; 
 
             board[x1][y1] = '*'; 
