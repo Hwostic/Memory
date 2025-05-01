@@ -5,11 +5,42 @@
 #include <mmsystem.h> // для работы с мультимедиа
 #include <chrono> // для работы со временем
 #include <cstdlib> //для очистки консоли
+#include <string> // для работы со строками
+#include <cctype>  //для работы с isdigits
 
 #pragma comment (lib, "Winmm.lib") //для работы с PlaySound
 
 using namespace std;
 
+bool is_all_digits(const string& s)  // функция проверяет, есть ли нецифровые символы
+{
+    if (s.empty()) return false; // Если строка пустая, возвращаем false
+    for (char c : s) {
+        if (!isdigit(c)) return false; // Если есть хоть один нецифровой символ, возвращаем false
+    }
+    return true; // Все символы - цифры
+}
+
+int check_number(const string& text) // функция вызывает проверку на нецифровые символы, и преобразует строку в целое число
+
+{
+    string input;
+    int number;
+    while (true) 
+    {
+        cout << text;
+        getline(cin, input);
+
+        if (!is_all_digits(input)) {
+            cout << "Введите целое положительное число." << endl;
+            continue;
+        }
+
+        number = stoi(input);
+  
+        return number;
+    }
+}
 
 // Функция для перемещения курсора вверх и очистки строк ниже
 void moveCursorUpAndClear(HANDLE hConsole, int linesToMove) {
@@ -90,7 +121,6 @@ bool isVin(char** board, int x1, int y1, int x2, int y2)
     return board[x1][y1] == board[x2][y2]; // Возвращает true, если карточки совпадают
 }
 
-
 //Функция, находящая совпадающие карточки
 
 void LuckCounts(char** board, char* cards, int size, int size2, int& count)
@@ -104,18 +134,15 @@ void LuckCounts(char** board, char* cards, int size, int size2, int& count)
 
         printBoard(board, size, size2); // Выводим текущее состояние доски
 
-        int x1, y1, x2, y2; // Координаты открываемых карточек
+        cout << "\nВведите координаты первой карточки:";
+        int x1 = check_number("\nX: ");
+        int y1 = check_number("Y: ");
 
-       
-        cout << "\nВведите координаты первой карточки:\nX: ";
-        cin >> x1;
-        cout << "Y: ";
-      cin >> y1;
-    
-        cout << "Введите координаты второй карточки:\nX: ";
-        cin >> x2;
-        cout << "Y: ";
-        cin >> y2;
+        cout << "Введите координаты второй карточки: ";
+        int x2 = check_number("X: ");
+        int y2 = check_number("Y: ");
+        // Координаты открываемых карточек
+
 
         x1 = x1 - 1, y1 = y1 - 1, x2 = x2 - 1, y2 = y2 - 1;
 
@@ -131,7 +158,6 @@ void LuckCounts(char** board, char* cards, int size, int size2, int& count)
             
             continue;
         }
-
 
 
         // Открытие карточек 
@@ -175,27 +201,24 @@ int main()
     auto start = chrono::high_resolution_clock::now(); //функция фиксирует точное время
 
     int count = 0; // количество открываемых карточек
-
-
+    
+    string input;
 
     cout << "Приветствуем в игре Memory!\nПравилы игры просты: открывать по 2 карточки, пока не найдутся совпадения. Приступим! :)\n";
 
     while (true)
     {
-        int size; 
-        int size2; 
+       
 
-        cout << "Введите четный размер игрового поля (например, 4 и 8 для 4x8): \nПервое значение: ";
-        cin >> size;
-        cout << "Второе значение: ";
-        cin >> size2; 
-
-        // Проверка на четность размера
-        if (((size * size2) % 2 != 0 || size < 2 || size >= 20) || (size2 % 2 != 0 || size2 < 2 || size2 >= 20)) {
-            cout << "Размер должен быть четным, не меньше 2 и не больше 20." << endl;
-            continue; 
-        }
+        cout << "Введите четный размер игрового поля (например, 4 и 8 для 4x8): ";
+        
+        int size = check_number("\nПервое значение:");
+        int size2 = check_number("Второе значение:");
       
+        if (((size * size2) % 2 != 0 || size < 2 || size >= 20) || ( size2 < 2 || size2 >= 20)) {
+            cout << "Размер должен быть четным, не меньше 2 и не больше 20." << endl;
+            continue;
+        }
        
         char** board = new char* [size];
         for (int i = 0; i < size; i++) {
@@ -205,9 +228,7 @@ int main()
 
         createBoard(board, cards, size, size2); //Создаем доску с карточками
 
-    
         LuckCounts(board, cards, size, size2, count); //основное тело программы, по завершению заиграет победная музыка
-
 
         PlaySoundA("vin.wav", NULL, SND_FILENAME | SND_ASYNC);
 
@@ -229,7 +250,7 @@ int main()
 
         // Запрос на повторную игру
         char playAgain;
-        cout << "\nХотите сыграть еще раз? (y/n): " << endl;
+        cout << "\nХотите сыграть еще раз? (y): " << endl;
         cin >> playAgain;
         if (playAgain != 'y' && playAgain != 'Y') {
             break;
